@@ -1,0 +1,249 @@
+---
+title: "NguyenRProjectPt1"
+author: "Nhi Nguyen"
+date: "2025-03-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{R}
+#install packages
+install.packages("vegan")
+#load the library
+library(vegan)
+library(ggplot2)
+```
+```{R}
+#Part A : Univariate statistics with R
+# read data
+data <- read.table("RTestData.txt",header =TRUE) # header = true so R know that the data have the header so it don't read the first line
+summary(data)
+View(data)
+
+
+# make histograms hist(x), qqnorm and qqline
+hist(data$lepto,main="Histogram of lepto" )
+qqnorm(data$lepto)
+qqline(data$lepto)
+
+hist(data$strep,main="Histogram of strep" )
+qqnorm(data$strep)
+qqline(data$strep)
+
+
+hist(data$fuso,main="Histogram of fuso" )
+qqnorm(data$fuso)
+qqline(data$fuso)
+
+hist(data$deepest,main="Histogram of deepest" )
+qqnorm(data$deepest)
+qqline(data$deepest)
+
+hist(data$deepest,main="Histogram of deepest" )
+qqnorm(data$deepest)
+qqline(data$deepest)
+
+hist(data$prev,main="Histogram of prev" )
+qqnorm(data$prev)
+qqline(data$prev)
+#look non normal
+
+hist(data$veil,main="Histogram of veil" )
+qqnorm(data$veil) #skew
+qqline(data$veil) #not straight
+```
+```{R}
+#transform variables
+strep_transform=sqrt(data$strep)
+lepto_transform=sqrt(data$lepto)
+fuso_transform=sqrt(data$fuso)
+prev_transform=sqrt(data$prev)
+veil_transform=sqrt(data$veil)
+
+#re make the histogram , qqnorm, qqline
+hist(prev_transform, main = "Histogram of Transform prev")
+qqnorm(prev_transform)
+qqline(prev_transform)
+#histogram more like bell shape now
+
+hist(strep_transform, main = "Histogram of Transform strep")
+qqnorm(strep_transform)
+qqline(strep_transform)
+#historgram look symmetry now 
+
+hist(lepto_transform, main = "Histogram of Transform lepto")
+qqnorm(lepto_transform)
+qqline(lepto_transform)
+#qq plot is more in straight line/ also histogram look more symmetry
+
+hist(fuso_transform, main = "Histogram of Transform fuso")
+qqnorm(fuso_transform)
+qqline(fuso_transform)
+#histogram more symmertry, not so much improve in qqplot
+
+hist(veil_transform, main = "Histogram of Transform veil") # more symmetry
+qqnorm(veil_transform)
+qqline(veil_transform) #looks better!
+```
+```{R}
+#ANOVA
+#1. lepto by time
+anova_lepto <- aov(lepto_transform ~ time, data=data)
+summary(anova_lepto)
+#p= 0.0256 which < 0.05 . Reject null hypothesis, there is a significant difference of lepto across time
+# Boxplot for lepto_transform by time
+boxplot(lepto_transform ~ time, data = data, main = "Boxplot of lepto by time", ylab = "Lepto Transformed")
+
+#2. strep by time
+anova_strep <- aov(strep_transform ~ time, data=data)
+summary(anova_strep)
+#p= 0.294 which > 0.05. Fail to reject the null hypothesis, there are no difference of strep across time
+boxplot(strep_transform ~ time, data = data, main = "Boxplot of strep by time", ylab = "Strep Transformed")
+
+```
+```{R}
+#Correlation
+#1. strep vs prev
+cor.test(data$strep, data$prev)
+#p=0.00084 < 0.05 the correlation is significant, negative corelation
+cor.test(strep_transform, prev_transform)
+#p=0.000207 also significant
+
+#2. strep vs fuso
+cor.test(data$strep, data$fuso)
+#negative correlation, p= 6.4e-06 also significant < 0.05
+cor.test(strep_transform, fuso_transform) #p-value = 1.869e-07 < 0.05
+
+#3. fuso vs lepto
+cor.test(data$fuso, data$lepto)
+#p-value = 0.7598 > 0.05 . no significant correlation. cor = -0.03 very close to 0, weak negative correlation
+cor.test(fuso_transform, lepto_transform)
+#p-value = 0.4119 also > 0.05. no correlation
+```
+```{R}
+#linear regression
+#1. strep vs deepest
+model1 <- lm(strep ~ deepest, data=data)
+summary(model1)
+#p-value deepest: 0.1654 . this relationship is not significant > 0.05
+# also low in r-square, so deepest dont explain much for strep
+plot(data$deepest, data$strep, main = " Strep vs Deepest", 
+     xlab = "Deepest", ylab = "Strep")
+abline(model1, col="red") 
+
+#2.  fuso vd deepest
+model2 <- lm(fuso ~ deepest, data=data)
+summary(model2)
+#p-value deepest= 0.00211 < 0.05, this relationship is signifcant
+plot(data$deepest, data$fuso, main = " Fuso vs Deepest", 
+     xlab = "Deepest", ylab = "Fuso")
+abline(model2, col="red") 
+#as deepest increase, fuso also increase because it show positive slope
+
+```
+```{R}
+#B ggplot
+# I already loaded ggplot2 library
+
+#(1) ggplot histogram of prev variable
+ggplot(data, aes(x = prev)) + 
+  geom_histogram(fill = "lightpink", color = "black", alpha = 0.5) +
+  labs(title = "Histogram of prev", x = "Prev", y = "Frequency") +
+  theme_classic()
+#(2)ggplot scatterplot of strep by deepest, colored by time
+ggplot(data, aes(x = deepest,y= strep, color= as.factor(time))) + 
+  geom_point() +
+  labs(title = "scatterplot of strep by deepest", x = "Deepest", y = "Strep", color="Time") +
+  theme_classic()
+#(3) ggplot scatterplot of fuso by deepest
+ggplot(data, aes(x = deepest,y= fuso)) + 
+  geom_point() +
+  labs(title = "scatterplot of fuso by deepest", x = "Deepest", y = "Fuso") +
+  theme_classic()
+# smoothing algorthm
+ggplot(data, aes(x = deepest, y = fuso)) + 
+  geom_point() +
+  geom_smooth(method = "lm", color = "lightpink") +
+  labs(title = "Scatterplot of Fuso by Deepest", x = "Deepest", y = "Fuso") +
+  theme_classic()
+```
+```{R}
+#C. vegan 
+newdata=data[2:6]
+head(newdata) #check to see if they have all the bacterial abundance 
+
+#1. alpha diversity -shannon
+shannon <-diversity (newdata)
+shannon # view obs per plot
+
+#2. rarefy data and make a plot using rarecurve
+spAbund <-rowSums(newdata) #gives the number of individuals found in each plot
+spAbund
+
+raremin <- min(rowSums(newdata))#rarefaction uses the smallest number of observations per sample to extrapolate the expected number if all other samples only had that number of observations
+raremin # view smallest number of obs which 11.6
+# I will round my data to intergers
+raremin2 <- round(min(rowSums(newdata)))
+newdata2 <-round(newdata) # still get error so i try to round the raremin
+sRare <- rarefy(newdata2, raremin2) #function rareefy . 
+#rarefy only accept interger
+sRare #gives an "expected"rarefied" number of species (not obs) if only 15 individuals were present
+raremin2 <- round(min(rowSums(newdata)))
+rarecurve(newdata2, col = "pink")
+
+
+#3. Bray-curtis , matrix and plot a histogram
+bray = vegdist(newdata2, "bray") 
+bray
+hist(bray, main="Histogram of Bray",xlim = range(0.0,1.0),col="lightpink")
+
+```
+```{R}
+newdata2.mds <- metaMDS(comm = newdata2, distance = "bray", trace = FALSE, autotransform = FALSE)
+plot(newdata2.mds$points,main = "MDS Plot")
+
+#create mds data frame
+MDS_data<- data.frame(newdata2.mds$points)
+
+MDS_data$status <- data$status #add status to mds data
+MDS_data$time <- data$time #add time
+
+# by status
+ggplot(MDS_data, aes(x = MDS1, y = MDS2, color = status)) +
+  geom_point() +  
+  labs(title = "MDS Plot Colored by Status", x = "MDS1", y = "MDS2") +
+  scale_color_gradient(low = "lightpink", high = "purple")+
+  theme_minimal() 
+
+  # by time
+ggplot(MDS_data, aes(x = MDS1, y = MDS2, color = time)) +
+  geom_point() +
+  labs(title = "MDS Plot Colored by Time", x = "MDS1", y = "MDS2") +
+  scale_color_gradient(low = "violet", high = "orange")+
+  theme_minimal() 
+  
+
+```
+

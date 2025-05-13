@@ -1,0 +1,68 @@
+---
+title: "Biol 668 R-Lab_NGUYEN"
+author: "Nhi Nguyen"
+date: "2025-02-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+```{r}
+list.files('~'). # read all the files in home directory
+list.files('Desktop')  #list all files in desktop
+#list.files('Desktop/Biol 668')
+d1=read.table('RTestData.txt', header=TRUE)  # read the table and tell R that my first row is the header not the data
+d1 # show the table
+fuso.  # not working
+d1$fuso # read column fuso in the table
+attach(d1)
+fuso # now it's working
+```
+```{r}
+hist (d1$strep)
+qqnorm(d1$strep) # no it's not linear
+lstrep=log(d1$strep)
+hist(lstrep)
+```
+```{r}
+qqnorm(lstrep)# looks more linear
+hist(lstrep) 
+t.test(d1$strep,d1$fuso) # p-value = 0.001117
+
+t.test(lstrep,d1$fuso) # p-value = 8.04e-16
+# yes they are different
+```
+```{r}
+d2= read.csv('primer.csv')
+attach(d2) 
+data.frame(d2)
+```
+```{r}
+newdata=d1[order(time),]
+time1=subset(d1, time =='1')
+```
+```{r}
+write.csv(time1,"time1.csv")
+r_bash.sh
+r.py
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
